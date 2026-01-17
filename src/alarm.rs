@@ -64,10 +64,13 @@ where
 
     /// Control alarm minutes (On: alarm enabled, Off: alarm disabled).
     pub async fn control_alarm_minutes(&mut self, status: Control) -> Result<(), Error<E>> {
+        self.control_bit_flag_inverted(Register::MINUTE_ALARM, BitFlags::AE, status).await
+        /*
         match status {
             Control::Off => self.set_register_bit_flag(Register::MINUTE_ALARM, BitFlags::AE).await,
             Control::On => self.clear_register_bit_flag(Register::MINUTE_ALARM, BitFlags::AE).await,
         }
+         */
     }
 
     /// Is alarm minutes enabled?
@@ -77,13 +80,20 @@ where
         Ok(flag)
     }
 
+
     /// Control alarm hours (On: alarm enabled, Off: alarm disabled).
     pub async fn control_alarm_hours(&mut self, status: Control) -> Result<(), Error<E>> {
+        self.control_bit_flag_inverted(Register::HOUR_ALARM,BitFlags::AE,status
+        ).await
+        /*    
         match status {
             Control::Off => self.set_register_bit_flag(Register::HOUR_ALARM, BitFlags::AE).await,
             Control::On => self.clear_register_bit_flag(Register::HOUR_ALARM, BitFlags::AE).await,
         }
+         */
     }
+
+    
 
     /// Is alarm hours enabled?
     pub async fn is_alarm_hours_enabled(&mut self) -> Result<bool, Error<E>> {
@@ -92,12 +102,16 @@ where
         Ok(flag)
     }
 
+
     /// Control alarm day (On: alarm enabled, Off: alarm disabled).
     pub async fn control_alarm_day(&mut self, status: Control) -> Result<(), Error<E>> {
+        /*
         match status {
             Control::Off => self.set_register_bit_flag(Register::DAY_ALARM, BitFlags::AE).await,
             Control::On => self.clear_register_bit_flag(Register::DAY_ALARM, BitFlags::AE).await,
         }
+         */
+        self.control_bit_flag_inverted(Register::DAY_ALARM, BitFlags::AE, status).await
     }
 
     /// Is alarm day enabled?
@@ -109,10 +123,13 @@ where
 
     /// Control alarm weekday (On: alarm enabled, Off: alarm disabled).
     pub async fn control_alarm_weekday(&mut self, status: Control) -> Result<(), Error<E>> {
+        self.control_bit_flag_inverted(Register::WEEKDAY_ALARM, BitFlags::AE, status).await
+        /*
         match status {
             Control::Off => self.set_register_bit_flag(Register::WEEKDAY_ALARM, BitFlags::AE).await,
             Control::On => self.clear_register_bit_flag(Register::WEEKDAY_ALARM, BitFlags::AE).await,
         }
+         */
     }
 
     /// Is alarm weekday enabled?
@@ -124,10 +141,15 @@ where
 
     /// Enable or disable alarm interrupt.
     pub async fn control_alarm_interrupt(&mut self, status: Control) -> Result<(), Error<E>> {
+        self.control_bit_flag(Register::CTRL_STATUS_2, BitFlags::AIE, status).await
+        
+        /*
         match status {
             Control::On => self.set_register_bit_flag(Register::CTRL_STATUS_2, BitFlags::AIE).await,
             Control::Off => self.clear_register_bit_flag(Register::CTRL_STATUS_2, BitFlags::AIE).await,
         }
+         */
+         
     }
 
     /// Read the alarm minutes setting.        
@@ -193,4 +215,10 @@ where
         self.control_alarm_weekday(Control::Off).await?;
         Ok(())
     }
+
+    
+
+
 }
+
+

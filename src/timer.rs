@@ -54,10 +54,13 @@ where
 
     /// Enable or disable the timer interrupt.
     pub async fn control_timer(&mut self, flag: Control) -> Result<(), Error<E>> {
+        self.control_bit_flag(Register::TIMER_CTRL, BitFlags::TE, flag).await
+        /*
         match flag {
             Control::On => self.set_register_bit_flag(Register::TIMER_CTRL, BitFlags::TE).await,
             Control::Off => self.clear_register_bit_flag(Register::TIMER_CTRL, BitFlags::TE).await,
         }
+         */
     }
 
     /// Check if timer is enabled.
@@ -67,10 +70,13 @@ where
 
     /// Enable or disable timer interrupt.
     pub async fn control_timer_interrupt(&mut self, flag: Control) -> Result<(), Error<E>> {
+        self.control_bit_flag(Register::CTRL_STATUS_2, BitFlags::TIE, flag).await
+        /*
         match flag {
             Control::On => self.set_register_bit_flag(Register::CTRL_STATUS_2, BitFlags::TIE).await,
             Control::Off => self.clear_register_bit_flag(Register::CTRL_STATUS_2, BitFlags::TIE).await,
         }
+         */
     }
 
     /// Check if timer interrupt is enabled.

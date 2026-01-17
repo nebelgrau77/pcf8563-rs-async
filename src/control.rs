@@ -10,10 +10,14 @@ where
 {
     /// Enable or disable external clock test mode.
     pub async fn control_ext_clk_test_mode(&mut self, flag: Control) -> Result<(), Error<E>> {
+        self.control_bit_flag(Register::CTRL_STATUS_1, BitFlags::TEST1, flag).await
+        /*
         match flag {
             Control::On => self.set_register_bit_flag(Register::CTRL_STATUS_1, BitFlags::TEST1).await,
             Control::Off => self.clear_register_bit_flag(Register::CTRL_STATUS_1, BitFlags::TEST1).await,
         }
+         */
+        
     }
 
     /// Is the external clock test mode enabled?
@@ -23,10 +27,13 @@ where
 
     /// Start/stop the internal clock.
     pub async fn control_clock(&mut self, flag: Control) -> Result<(), Error<E>> {
+        self.control_bit_flag(Register::CTRL_STATUS_1, BitFlags::STOP, flag).await
+        /*
         match flag {
             Control::On => self.clear_register_bit_flag(Register::CTRL_STATUS_1, BitFlags::STOP).await,
             Control::Off => self.set_register_bit_flag(Register::CTRL_STATUS_1, BitFlags::STOP).await,
         }
+         */
     }
 
     /// Check if the internal clock is running.
@@ -38,10 +45,13 @@ where
 
     /// Enable or disable power-on-reset override facility.
     pub async fn control_power_on_reset_override(&mut self, flag: Control) -> Result<(), Error<E>> {
+        self.control_bit_flag(Register::CTRL_STATUS_1, BitFlags::TESTC, flag).await
+        /*
         match flag {
             Control::On => self.set_register_bit_flag(Register::CTRL_STATUS_1, BitFlags::TESTC).await,
             Control::Off => self.clear_register_bit_flag(Register::CTRL_STATUS_1, BitFlags::TESTC).await,
         }
+         */
     }
 
     /// Check if power-on-reset override facility is enabled.

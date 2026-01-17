@@ -314,6 +314,38 @@ where
             Ok(())
         }
     }
+
+    /// Change bit flag (On sets bit flag, Off clears it)
+    async fn control_bit_flag(
+        &mut self,
+        register: u8,
+        bitmask: u8,
+        control: Control
+        ) -> Result<(), Error<E>> 
+        {
+            match control {
+                Control::On => self.set_register_bit_flag(register, bitmask).await,
+                Control::Off => self.clear_register_bit_flag(register, bitmask).await,
+            }
+        }
+
+    /// Change bit flag (Off sets bit flag, On clears it)
+    async fn control_bit_flag_inverted(
+        &mut self,
+        register: u8,
+        bitmask: u8,
+        control: Control
+        ) -> Result<(), Error<E>> 
+        {
+            match control {
+                Control::Off => self.set_register_bit_flag(register, bitmask).await,
+                Control::On => self.clear_register_bit_flag(register, bitmask).await,
+            }
+        }
+
+    
+
+
 }
 
 /// Convert the Binary Coded Decimal value to decimal (only the lowest 7 bits).

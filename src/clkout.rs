@@ -39,10 +39,13 @@ where
 
     /// Enable or disable clock output.
     pub async fn control_clkout(&mut self, status: Control) -> Result<(), Error<E>> {
+        self.control_bit_flag(Register::CLKOUT_CTRL, BitFlags::FE, status).await
+        /*
         match status {
             Control::On => self.set_register_bit_flag(Register::CLKOUT_CTRL, BitFlags::FE).await,
             Control::Off => self.clear_register_bit_flag(Register::CLKOUT_CTRL, BitFlags::FE).await,
         }
+         */
     }
 
     /// Is the clock output enabled?
