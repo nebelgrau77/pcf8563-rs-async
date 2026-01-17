@@ -344,6 +344,17 @@ where
         }
 
     
+    /// Is alarm enabled?
+    pub async fn is_alarm_enabled(
+        &mut self,
+        register: u8,
+        bitmask: u8)
+         -> Result<bool, Error<E>> {
+        let flag = self.is_register_bit_flag_high(register, bitmask).await?;
+        let flag = flag ^ true;
+        Ok(flag)
+    }
+    
 
 
 }

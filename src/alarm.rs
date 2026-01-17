@@ -75,9 +75,12 @@ where
 
     /// Is alarm minutes enabled?
     pub async fn is_alarm_minutes_enabled(&mut self) -> Result<bool, Error<E>> {
+        self.is_alarm_enabled(Register::MINUTE_ALARM, BitFlags::AE).await
+        /*
         let flag = self.is_register_bit_flag_high(Register::MINUTE_ALARM, BitFlags::AE).await?;
         let flag = flag ^ true;
         Ok(flag)
+         */
     }
 
 
@@ -97,9 +100,12 @@ where
 
     /// Is alarm hours enabled?
     pub async fn is_alarm_hours_enabled(&mut self) -> Result<bool, Error<E>> {
+        self.is_alarm_enabled(Register::HOUR_ALARM, BitFlags::AE).await
+        /*
         let flag = self.is_register_bit_flag_high(Register::HOUR_ALARM, BitFlags::AE).await?;
         let flag = flag ^ true;
         Ok(flag)
+         */
     }
 
 
@@ -116,9 +122,12 @@ where
 
     /// Is alarm day enabled?
     pub async fn is_alarm_day_enabled(&mut self) -> Result<bool, Error<E>> {
+        self.is_alarm_enabled(Register::DAY_ALARM, BitFlags::AE).await
+        /*
         let flag = self.is_register_bit_flag_high(Register::DAY_ALARM, BitFlags::AE).await?;
         let flag = flag ^ true;
         Ok(flag)
+         */
     }
 
     /// Control alarm weekday (On: alarm enabled, Off: alarm disabled).
@@ -134,9 +143,12 @@ where
 
     /// Is alarm weekday enabled?
     pub async fn is_alarm_weekday_enabled(&mut self) -> Result<bool, Error<E>> {
+        self.is_alarm_enabled(Register::WEEKDAY_ALARM, BitFlags::AE).await
+        /*
         let flag = self.is_register_bit_flag_high(Register::WEEKDAY_ALARM, BitFlags::AE).await?;
         let flag = flag ^ true;
         Ok(flag)
+         */
     }
 
     /// Enable or disable alarm interrupt.
