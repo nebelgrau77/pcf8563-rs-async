@@ -166,42 +166,54 @@ where
 
     /// Read the alarm minutes setting.        
     pub async fn get_alarm_minutes(&mut self) -> Result<u8, Error<E>> {
+        self.get_alarm_setting(Register::MINUTE_ALARM).await
+        /*
         let mut data = [0];
         self.i2c
             .write_read(DEVICE_ADDRESS, &[Register::MINUTE_ALARM], &mut data)
             .await
             .map_err(Error::I2C)?;
         Ok(decode_bcd(data[0]))
+         */
     }
 
     /// Read the alarm hours setting.
     pub async fn get_alarm_hours(&mut self) -> Result<u8, Error<E>> {
+        self.get_alarm_setting(Register::HOUR_ALARM).await
+        /*
         let mut data = [0];
         self.i2c
             .write_read(DEVICE_ADDRESS, &[Register::HOUR_ALARM], &mut data)
             .await
             .map_err(Error::I2C)?;
         Ok(decode_bcd(data[0]))
+         */
     }
 
     /// Read the alarm day setting.
     pub async fn get_alarm_day(&mut self) -> Result<u8, Error<E>> {
+        self.get_alarm_setting(Register::DAY_ALARM).await
+        /*
         let mut data = [0];
         self.i2c
             .write_read(DEVICE_ADDRESS, &[Register::DAY_ALARM], &mut data)
             .await
             .map_err(Error::I2C)?;
         Ok(decode_bcd(data[0]))
+         */
     }
 
     /// Read the alarm weekday setting.
     pub async fn get_alarm_weekday(&mut self) -> Result<u8, Error<E>> {
+        self.get_alarm_setting(Register::WEEKDAY_ALARM).await
+        /*
         let mut data = [0];
         self.i2c
             .write_read(DEVICE_ADDRESS, &[Register::WEEKDAY_ALARM], &mut data)
             .await
             .map_err(Error::I2C)?;
         Ok(decode_bcd(data[0]))
+         */
     }
 
     /// Get the alarm flag (if true, alarm event happened).

@@ -355,6 +355,18 @@ where
         Ok(flag)
     }
     
+    /// Read the alarm setting.
+    pub async fn get_alarm_setting(
+        &mut self,
+        register: u8
+    ) -> Result<u8, Error<E>> {
+        let mut data = [0];
+        self.i2c
+            .write_read(DEVICE_ADDRESS, &[register], &mut data)
+            .await
+            .map_err(Error::I2C)?;
+        Ok(decode_bcd(data[0]))
+    }
 
 
 }
