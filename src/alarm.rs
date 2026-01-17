@@ -19,11 +19,14 @@ where
         if minutes > 59 {
             return Err(Error::InvalidInputData);
         }
+        self.set_alarm_value(Register::MINUTE_ALARM, minutes).await
+        /*
         let data: u8 = self.read_register(Register::MINUTE_ALARM).await?; // read current value
         let data: u8 = data & BitFlags::AE; // keep the AE bit as is
         let setting: u8 = encode_bcd(minutes);
         let data: u8 = data | setting;
         self.write_register(Register::MINUTE_ALARM, data).await
+         */
     }
 
     /// Set the alarm hours [0-23], keeping the AE bit unchanged.
@@ -31,11 +34,14 @@ where
         if hours > 23 {
             return Err(Error::InvalidInputData);
         }
+        self.set_alarm_value(Register::HOUR_ALARM, hours).await
+        /*
         let data: u8 = self.read_register(Register::HOUR_ALARM).await?; // read current value
         let data: u8 = data & BitFlags::AE; // keep the AE bit as is
         let setting: u8 = encode_bcd(hours);
         let data: u8 = data | setting;
         self.write_register(Register::HOUR_ALARM, data).await
+         */
     }
 
     /// Set the alarm day [1-31], keeping the AE bit unchanged.
@@ -43,11 +49,14 @@ where
         if day < 1 || day > 31 {
             return Err(Error::InvalidInputData);
         }
+        self.set_alarm_value(Register::DAY_ALARM, day).await
+        /*
         let data: u8 = self.read_register(Register::DAY_ALARM).await?; // read current value
         let data: u8 = data & BitFlags::AE; // keep the AE bit as is
         let setting: u8 = encode_bcd(day);
         let data: u8 = data | setting;
         self.write_register(Register::DAY_ALARM, data).await
+         */
     }
 
     /// Set the alarm weekday [0-6], keeping the AE bit unchanged.
@@ -55,11 +64,14 @@ where
         if weekday > 6 {
             return Err(Error::InvalidInputData);
         }
+        self.set_alarm_value(Register::WEEKDAY_ALARM, weekday).await
+        /*
         let data: u8 = self.read_register(Register::WEEKDAY_ALARM).await?; // read current value
         let data: u8 = data & BitFlags::AE; // keep the AE bit as is
         let setting: u8 = encode_bcd(weekday);
         let data: u8 = data | setting;
         self.write_register(Register::WEEKDAY_ALARM, data).await
+         */
     }
 
     /// Control alarm minutes (On: alarm enabled, Off: alarm disabled).
@@ -166,7 +178,7 @@ where
 
     /// Read the alarm minutes setting.        
     pub async fn get_alarm_minutes(&mut self) -> Result<u8, Error<E>> {
-        self.get_alarm_setting(Register::MINUTE_ALARM).await
+        self.get_alarm_setting(Register::MINUTE_ALARM, 0b0111_1111).await
         /*
         let mut data = [0];
         self.i2c
@@ -179,7 +191,7 @@ where
 
     /// Read the alarm hours setting.
     pub async fn get_alarm_hours(&mut self) -> Result<u8, Error<E>> {
-        self.get_alarm_setting(Register::HOUR_ALARM).await
+        self.get_alarm_setting(Register::HOUR_ALARM, 0b0011_1111).await
         /*
         let mut data = [0];
         self.i2c
@@ -192,7 +204,7 @@ where
 
     /// Read the alarm day setting.
     pub async fn get_alarm_day(&mut self) -> Result<u8, Error<E>> {
-        self.get_alarm_setting(Register::DAY_ALARM).await
+        self.get_alarm_setting(Register::DAY_ALARM, 0b0011_1111).await
         /*
         let mut data = [0];
         self.i2c
@@ -205,7 +217,7 @@ where
 
     /// Read the alarm weekday setting.
     pub async fn get_alarm_weekday(&mut self) -> Result<u8, Error<E>> {
-        self.get_alarm_setting(Register::WEEKDAY_ALARM).await
+        self.get_alarm_setting(Register::WEEKDAY_ALARM, 0b0000_0111).await
         /*
         let mut data = [0];
         self.i2c
@@ -240,7 +252,41 @@ where
         Ok(())
     }
 
+    /// Is alarm enabled?
+    pub async fn is_alarm_enabled(
+        &mut self,
+        register: u8,
+        bitmask: u8)
+         -> Result<bool, Error<E>> {
+        let flag = self.is_register_bit_flag_high(register, bitmask).await?;
+        let flag = flag ^ true;
+        Ok(flag)
+    }
     
+    /// Read the alarm setting.
+    pub async fn get_alarm_setting(
+        &mut self,
+        register: u8,
+        decode_mask: u8
+    ) -> Result<u8, Error<E>> {
+        let mut data = [0];
+        self.i2c
+            .write_read(DEVICE_ADDRESS, &[register], &mut data)
+            .await
+            .map_err(Error::I2C)?;
+        Ok(decode_bcd(data[0] & decode_mask))
+    }
+
+    /// set alarm value
+    pub async fn set_alarm_value(
+        &mut self,
+        register: u8,
+        value: u8
+    ) -> Result<(), Error<E>> {
+        let data: u8 = self.read_register(register).await?; // read current value
+        let data: u8 = (data & BitFlags::AE) | encode_bcd(value) ; // keep the AE bit as is        
+        self.write_register(register, data).await
+    }
 
 
 }

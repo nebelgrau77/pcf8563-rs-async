@@ -343,30 +343,18 @@ where
             }
         }
 
-    
-    /// Is alarm enabled?
-    pub async fn is_alarm_enabled(
+    async fn set_frequency(
         &mut self,
         register: u8,
-        bitmask: u8)
-         -> Result<bool, Error<E>> {
-        let flag = self.is_register_bit_flag_high(register, bitmask).await?;
-        let flag = flag ^ true;
-        Ok(flag)
+        frequency: u8,
+        enable_bitmask: u8
+    ) -> Result<(), Error<E>> {
+        let data = self.read_register(register).await?; // read current value
+        let data = (data & enable_bitmask) | frequency; // keep the FE bit as is        
+        self.write_register(register, data).await
     }
     
-    /// Read the alarm setting.
-    pub async fn get_alarm_setting(
-        &mut self,
-        register: u8
-    ) -> Result<u8, Error<E>> {
-        let mut data = [0];
-        self.i2c
-            .write_read(DEVICE_ADDRESS, &[register], &mut data)
-            .await
-            .map_err(Error::I2C)?;
-        Ok(decode_bcd(data[0]))
-    }
+    
 
 
 }

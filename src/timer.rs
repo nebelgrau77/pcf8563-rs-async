@@ -46,10 +46,13 @@ where
 
     /// Set timer frequency (does not alter the timer enabled/disabled bit).
     pub async fn set_timer_frequency(&mut self, frequency: TimerFreq) -> Result<(), Error<E>> {
+        self.set_frequency(Register::TIMER_CTRL, frequency.bits(), 0b1000_0000).await
+        /*
         let data = self.read_register(Register::TIMER_CTRL).await?; // read current value
         let data = data & 0b1000_0000; // keep the TE bit as is
         let data = data | frequency.bits(); // set the lowest two bits
         self.write_register(Register::TIMER_CTRL, data).await
+         */
     }
 
     /// Enable or disable the timer interrupt.

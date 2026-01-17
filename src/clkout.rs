@@ -31,10 +31,13 @@ where
 {
     /// Set clock output frequency (does not alter the clkout enabled/disabled bit).
     pub async fn set_clkout_frequency(&mut self, frequency: ClkoutFreq) -> Result<(), Error<E>> {
+        self.set_frequency(Register::CLKOUT_CTRL, frequency.bits(), 0b1000_0000).await
+        /*
         let data = self.read_register(Register::CLKOUT_CTRL).await?; // read current value
         let data = data & 0b1000_0000; // keep the FE bit as is
         let data = data | frequency.bits(); // set the lowest two bits
         self.write_register(Register::CLKOUT_CTRL, data).await
+         */
     }
 
     /// Enable or disable clock output.
