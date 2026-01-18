@@ -4,6 +4,12 @@
 
 Async version of this [driver](https://github.com/nebelgrau77/pcf8563-rs) 
 
+### TO DO:
+- [ ] update documentation (async, additional features)
+- [ ] add more examples, with other MCUs (RP, nRF)
+- [ ] add missing functions: `get_timer_frequency`, `get_timer_interrupt_mode`, `get_clkout_frequency` etc
+- [ ] add better tests
+
 ## Description - TBD
 
 ## Support

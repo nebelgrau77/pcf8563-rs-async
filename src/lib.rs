@@ -45,7 +45,7 @@
 //! The wrapper function `rtc_init()` can be used for initialization of the device:
 //!
 //! ```rust
-//! rtc.rtc_init().unwrap();
+//! rtc.rtc_init().await.unwrap();
 //! ```
 //!
 //! It clears all the bits in the two control registers, disabling all the interrupts,
@@ -91,18 +91,18 @@
 //! ```rust
 //! // set the alarm to 9:25, the alarm flag AF will be set at that time,
 //! // and the interrupt pin set to active
-//! rtc.set_alarm_minutes(25).unwrap();
-//! rtc.set_alarm_hours(9).unwrap();
-//! rtc.control_alarm_minutes(Control::On).unwrap();
-//! rtc.control_alarm_hours(Control::On).unwrap();
-//! rtc.control_alarm_interrupt(Control::On).unwrap();
+//! rtc.set_alarm_minutes(25).await.unwrap();
+//! rtc.set_alarm_hours(9).await.unwrap();
+//! rtc.control_alarm_minutes(Control::On).await.unwrap();
+//! rtc.control_alarm_hours(Control::On).await.unwrap();
+//! rtc.control_alarm_interrupt(Control::On).await.unwrap();
 //!```
 //!
 //! To check the alarm flag and clear after it's set:
 //!
 //! ```rust
-//! if rtc.get_alarm_flag().unwrap() {
-//!     rtc.clear_alarm_flag().unwrap()
+//! if rtc.get_alarm_flag().await.unwrap() {
+//!     rtc.clear_alarm_flag().await.unwrap()
 //! }
 //!```
 //!
@@ -110,7 +110,7 @@
 //! but a wrapper function was defined to disable all the alarms at once:
 //!
 //! ```rust
-//! rtc.disable_all_alarms().unwrap();
+//! rtc.disable_all_alarms().await.unwrap();
 //! ```
 //!
 //! ### Timer
@@ -130,15 +130,15 @@
 //! the result of an OR operation, i.e. will be active when either alarm or timer will trigger the interrupt event.
 //!
 //! ```rust
-//! rtc.set_timer_frequency(TimerFreq::Timer_1Hz).unwrap(); // set frequency to 1 Hz
-//! rtc.set_timer(30).unwrap(); // set timer to 30 ticks
-//! rtc.control_timer_interrupt(Control::On).unwrap(); // enable timer interrupt
-//! rtc.control_timer(Control::On).unwrap(); // start the timer
+//! rtc.set_timer_frequency(TimerFreq::Timer_1Hz).await.unwrap(); // set frequency to 1 Hz
+//! rtc.set_timer(30).await.unwrap(); // set timer to 30 ticks
+//! rtc.control_timer_interrupt(Control::On).await.unwrap(); // enable timer interrupt
+//! rtc.control_timer(Control::On).await.unwrap(); // start the timer
 //!
 //! // after 30 seconds the timer will set the TF flag and the interrupt pin will become active
 //!
-//! rtc.control_timer(Control::Off).unwrap(); // disable the timer
-//! rtc.clear_timer_flag().unwrap(); // clear the timer flag
+//! rtc.control_timer(Control::Off).await.unwrap(); // disable the timer
+//! rtc.clear_timer_flag().await.unwrap(); // clear the timer flag
 //! ```
 //!
 //! ### Clock output
@@ -158,8 +158,8 @@
 //! On reset the clock output is enabled and set to 32768 Hz
 //!
 //! ```rust
-//! rtc.set_clkout_frequency(ClkoutFreq::Clkout_1024Hz).unwrap(); // set the frequency
-//! rtc.control_clkout(Control::On).unwrap(); // enable the clock output
+//! rtc.set_clkout_frequency(ClkoutFreq::Clkout_1024Hz).await.unwrap(); // set the frequency
+//! rtc.control_clkout(Control::On).await.unwrap(); // enable the clock output
 //! ```
 //!
 //! ### RTC Control
