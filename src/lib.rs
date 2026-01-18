@@ -180,6 +180,10 @@ use embedded_hal_async as hal;
 
 use hal::i2c::I2c;
 
+use defmt::Format;
+
+pub use crate::alarm::AlarmSettings;
+
 /// All possible errors in this crate
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum Error<E>
@@ -188,6 +192,73 @@ pub enum Error<E>
     I2C(E),
     /// Invalid input data
     InvalidInputData,
+}
+
+/// Weekday names
+#[derive(Debug, Clone, Copy, PartialEq, Format)]
+pub enum Weekday {
+    /// Sunday (the beginning of the week for PCF8563)
+    Sunday,
+    /// Monday
+    Monday,
+    /// Tuesday
+    Tuesday,
+    /// Wednesday
+    Wednesday,
+    /// Thursday
+    Thursday,
+    /// Friday
+    Friday,
+    /// Saturday
+    Saturday,
+}
+
+impl Weekday {
+    /// Get numeric value from the weekday name
+    pub fn value(&self) -> u8 {
+        match self {
+            Weekday::Sunday => 0,
+            Weekday::Monday => 1,
+            Weekday::Tuesday => 2,
+            Weekday::Wednesday => 3,
+            Weekday::Thursday => 4,
+            Weekday::Friday => 5,
+            Weekday::Saturday => 6,            
+        }
+    }
+    
+}
+
+impl TryFrom<u8> for Weekday {
+    /// Get weekday name from a numeric value
+    type Error = ();
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        match value {
+            0 => Ok(Weekday::Sunday),
+            1 => Ok(Weekday::Monday),
+            2 => Ok(Weekday::Tuesday),
+            3 => Ok(Weekday::Wednesday),
+            4 => Ok(Weekday::Thursday),
+            5 => Ok(Weekday::Friday),
+            6 => Ok(Weekday::Saturday),
+            _ => Err(()),
+        }
+    }
+}
+
+impl core::fmt::Display for Weekday {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match self {
+            Weekday::Sunday => write!(f, "Sunday"),            
+            Weekday::Monday => write!(f, "Monday"),
+            Weekday::Tuesday => write!(f, "Tuesday"),
+            Weekday::Wednesday => write!(f, "Wednesday"),
+            Weekday::Thursday => write!(f, "Thursday"),
+            Weekday::Friday => write!(f, "Friday"),
+            Weekday::Saturday => write!(f, "Saturday"),
+        }
+    }
 }
 
 struct Register;

@@ -4,11 +4,62 @@
 //! As it is now, setting an alarm component (minutes, hours, day, weekday) enables alarm for this component
 //! TO DO: Keep the enabled/disabled bit when setting the alarm components (minutes, hours, day, weekday)
 
+use crate::Weekday;
+
 use super::{
-    decode_bcd, encode_bcd, I2c, BitFlags, Control, Error, Register, DEVICE_ADDRESS, PCF8563,
+    decode_bcd, encode_bcd, I2c, BitFlags, Control, Error, Register, DEVICE_ADDRESS, PCF8563
 };
 //use embedded_hal as hal;
 //use hal::i2c::I2c;
+
+/// Alarm settings: minutes, hours, day, weekday. All of them are optional.
+pub struct AlarmSettings {
+    /// Alarm set to minutes
+    pub minutes: Option<u8>,
+    /// Alarm set to hours
+    pub hours: Option<u8>,
+    /// Alarm set to day (e.g. the 17th)
+    pub day: Option<u8>,
+    /// Alarm set to specific weekday
+    pub weekday: Option<Weekday>,
+}
+
+impl AlarmSettings {
+    /// create new alarm settings
+    pub fn new() -> Self {
+        AlarmSettings { 
+            minutes: None, 
+            hours: None, 
+            day: None, 
+            weekday: None,
+        }
+    }
+
+    /// Use minutes value
+    pub fn with_minutes(mut self, minutes: u8) -> Self {
+        self.minutes = Some(minutes);
+        self
+    }
+
+    /// Use hours value
+    pub fn with_hours(mut self, hours: u8) -> Self {
+        self.hours = Some(hours);
+        self
+    }
+
+    /// Use day value
+    pub fn with_day(mut self, day: u8) -> Self {
+        self.day = Some(day);
+        self
+    }
+
+    /// Use weekday value
+    pub fn with_weekday(mut self, weekday: Weekday) -> Self {
+        self.weekday = Some(weekday);
+        self
+    }
+
+}
 
 impl<I2C, E> PCF8563<I2C>
 where
@@ -60,11 +111,13 @@ where
     }
 
     /// Set the alarm weekday [0-6], keeping the AE bit unchanged.
-    pub async fn set_alarm_weekday(&mut self, weekday: u8) -> Result<(), Error<E>> {
+    pub async fn set_alarm_weekday(&mut self, weekday: Weekday) -> Result<(), Error<E>> {
+        /*
         if weekday > 6 {
             return Err(Error::InvalidInputData);
         }
-        self.set_alarm_value(Register::WEEKDAY_ALARM, weekday).await
+         */
+        self.set_alarm_value(Register::WEEKDAY_ALARM, weekday.value()).await
         /*
         let data: u8 = self.read_register(Register::WEEKDAY_ALARM).await?; // read current value
         let data: u8 = data & BitFlags::AE; // keep the AE bit as is
@@ -252,8 +305,66 @@ where
         Ok(())
     }
 
-    /// Is alarm enabled?
-    pub async fn is_alarm_enabled(
+    /// Set the alarm in one go: minutes, hours, day, weekday
+    /// All these values are optional, alarm only gets enabled for the provided data
+    /// All previous settings are cleared    
+    pub async fn set_alarm(&mut self, settings: &AlarmSettings) -> Result<(), Error<E>> {
+        // clear the alarm flag
+        self.clear_alarm_flag().await?;
+
+        // disable all the alarms
+        self.disable_all_alarms().await?;
+
+        // set each components separately
+        if let Some(minutes) = settings.minutes {
+            self.set_alarm_minutes(minutes).await?;
+            self.control_alarm_minutes(Control::On).await?;
+        }
+        if let Some(hours) = settings.hours {
+            self.set_alarm_hours(hours).await?;
+            self.control_alarm_hours(Control::On).await?;
+        }
+        if let Some(day) = settings.day {
+            self.set_alarm_day(day).await?;
+            self.control_alarm_day(Control::On).await?;
+        }
+        if let Some(weekday) = settings.weekday {
+            self.set_alarm_weekday(weekday).await?;
+            self.control_alarm_weekday(Control::On).await?;
+        }
+        Ok(())
+
+    }
+
+    /// Get the alarm settings: minutes, hours, day, weekday
+    pub async fn get_alarm_settings(&mut self) -> Result<AlarmSettings, Error<E>> {
+        let settings = AlarmSettings {
+            minutes: if self.is_alarm_minutes_enabled().await? {
+                Some(self.get_alarm_minutes().await?)
+            } else {
+                None
+            },
+            hours: if self.is_alarm_hours_enabled().await? {
+                Some(self.get_alarm_hours().await?)
+            } else {
+                None
+            },
+            day: if self.is_alarm_day_enabled().await? {
+                Some(self.get_alarm_day().await?)
+            } else {
+                None
+            },
+            weekday: if self.is_alarm_weekday_enabled().await? {
+                Some(Weekday::try_from(self.get_alarm_weekday().await?).map_err(|_| Error::InvalidInputData)?)
+            } else {
+                None
+            }
+        };
+        Ok(settings)
+    }
+
+    /// Is alarm enabled? Helper function.
+    async fn is_alarm_enabled(
         &mut self,
         register: u8,
         bitmask: u8)
@@ -263,8 +374,8 @@ where
         Ok(flag)
     }
     
-    /// Read the alarm setting.
-    pub async fn get_alarm_setting(
+    /// Read the alarm setting. Helper function.
+    async fn get_alarm_setting(
         &mut self,
         register: u8,
         decode_mask: u8
@@ -277,8 +388,8 @@ where
         Ok(decode_bcd(data[0] & decode_mask))
     }
 
-    /// set alarm value
-    pub async fn set_alarm_value(
+    /// Set alarm value. Helper function.
+    async fn set_alarm_value(
         &mut self,
         register: u8,
         value: u8

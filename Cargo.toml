@@ -25,6 +25,7 @@ include = [
 maintenance = { status = "actively-developed" }
 
 [dependencies]
+defmt = "1.0.1"
 embedded-hal-async = "1.0.0"
 
 [dev-dependencies]

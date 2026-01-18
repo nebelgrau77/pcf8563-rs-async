@@ -6,7 +6,7 @@
 //! TO DO: As the chip may be used for devices that are clocks only, without the calendar function
 //! a convenient set_time() function could be added (sets only seconds, minutes and hours)
 
-use super::{decode_bcd, encode_bcd, I2c, BitFlags, Error, Register, DEVICE_ADDRESS, PCF8563};
+use super::{decode_bcd, encode_bcd, I2c, BitFlags, Error, Register, DEVICE_ADDRESS, PCF8563, Weekday};
 
 
 /// Container to hold date and time components.
@@ -17,7 +17,7 @@ pub struct DateTime {
     /// Month [1-12]
     pub month: u8,
     /// Weekday [0-6].
-    pub weekday: u8,
+    pub weekday: Weekday,
     /// Days [1-31].
     pub day: u8,
     /// Hours [0-23].
@@ -53,7 +53,7 @@ where
         Ok(DateTime {
             year: decode_bcd(data[6]),
             month: decode_bcd(data[5] & 0x1f),
-            weekday: decode_bcd(data[4] & 0x07),
+            weekday: Weekday::try_from(decode_bcd(data[4] & 0x07)).map_err(|_| Error::InvalidInputData)?,
             day: decode_bcd(data[3] & 0x3f),
             hours: decode_bcd(data[2] & 0x3f),
             minutes: decode_bcd(data[1] & 0x7f),
@@ -68,7 +68,7 @@ where
         if datetime.year > 99
             || datetime.month < 1
             || datetime.month > 12
-            || datetime.weekday > 6
+            //|| datetime.weekday > 6
             || datetime.day < 1
             || datetime.month > 31
             || datetime.hours > 23
@@ -83,7 +83,7 @@ where
             encode_bcd(datetime.minutes),
             encode_bcd(datetime.hours),
             encode_bcd(datetime.day),
-            encode_bcd(datetime.weekday),
+            encode_bcd(datetime.weekday.value()),
             encode_bcd(datetime.month), //century bit set to 0
             encode_bcd(datetime.year),
         ];
