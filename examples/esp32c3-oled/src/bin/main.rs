@@ -27,7 +27,32 @@ use static_cell::StaticCell;
 
 use esp_println as _;
 
+use core::fmt::Write;   
+use arrayvec::ArrayString;
+
+use ssd1306::{
+    mode::{
+        BufferedGraphicsModeAsync, 
+        DisplayConfigAsync
+        },
+    prelude::{DisplayRotation, *},
+    size::DisplaySize128x64,
+    I2CDisplayInterface,
+    Ssd1306Async,    
+};
+use embedded_graphics::{    
+    pixelcolor::BinaryColor,
+    prelude::{Point, *},
+    text::{Baseline, Text, Alignment},
+    mono_font::{
+        ascii::FONT_10X20,                    
+        MonoTextStyleBuilder
+    },
+    };
+
+
 use pcf8563_async::*;
+
 
 static TIMESIGNAL: Signal<CriticalSectionRawMutex, DateTime> = Signal::new();
 
@@ -36,6 +61,11 @@ static I2CBUS: StaticCell<Mutex<NoopRawMutex, I2c<'static, Async>>> = StaticCell
 
 // Types defined for I2C devices (bus, display)
 type SharedI2cDevice = I2cDevice<'static, NoopRawMutex, I2c<'static, Async>>;
+type DisplayInterface = I2CInterface<SharedI2cDevice>;
+type DisplayType = Ssd1306Async<
+    DisplayInterface,
+    DisplaySize128x64,
+    BufferedGraphicsModeAsync<DisplaySize128x64>>;
 
 
 #[panic_handler]
@@ -78,24 +108,24 @@ async fn main(spawner: Spawner) {
 
     info!("RTC set up");
 
-    /*
-    // initial setup
-    rtc.rtc_init().await.unwrap();
-    rtc.set_datetime(&DateTime {year: 26, month: 1, day: 18, hours: 22, minutes: 6, seconds: 0, weekday: Weekday::Sunday}).await.unwrap();
-     */
+    let interface = I2CDisplayInterface::new(I2cDevice::new(bus));
+
+    let mut display = Ssd1306Async::new(interface, DisplaySize128x64, DisplayRotation::Rotate0).into_buffered_graphics_mode();
+    display.init().await.unwrap();
+    display.clear(BinaryColor::Off).unwrap();
+
+    info!("OLED display set up");
+
 
     spawner.spawn(get_time(rtc)).ok();
+    spawner.spawn(display_time(display)).unwrap();
 
     loop {
-        // get time every second                      
-        let time = TIMESIGNAL.wait().await;
-        info!("date & time: 20{:02}-{:02}-{:02} {:02}:{:02}:{:02} (weekday is {})", time.year, time.month, time.day, time.hours, time.minutes, time.seconds, time.weekday);
+        //info!("Hello world!");
         Timer::after(Duration::from_secs(1)).await;
     }
 
-    // for inspiration have a look at the examples at https://github.com/esp-rs/esp-hal/tree/esp-hal-v1.0.0-rc.0/examples/src/bin
 }
-
 
 
 #[embassy_executor::task]
@@ -103,8 +133,39 @@ async fn get_time(mut rtc: PCF8563<SharedI2cDevice>) {
     // get time from RTC, update TIMESIGNAL
     loop {
         let time = rtc.get_datetime().await.unwrap();                        
+
         TIMESIGNAL.signal(time);
         Timer::after(Duration::from_millis(250)).await;
     }
 }
 
+
+#[embassy_executor::task]
+async fn display_time(mut oled: DisplayType) {
+    
+    let text_style = MonoTextStyleBuilder::new().font(&FONT_10X20).text_color(BinaryColor::On).build();
+        
+    let mut last_seconds: u8 = 255; // initial value that will definitely change
+    
+    loop {        
+        let time = TIMESIGNAL.wait().await;        
+
+        if time.seconds != last_seconds {
+            last_seconds = time.seconds;
+            oled.clear(BinaryColor::Off).unwrap();
+
+            let mut textbuffer = ArrayString::<8>::new();
+
+            if time.seconds%2 == 0 {
+                write!(&mut textbuffer, "{:02}:{:02}", time.hours, time.minutes).unwrap();
+            } else {
+                write!(&mut textbuffer, "{:02} {:02}", time.hours, time.minutes).unwrap();
+            }
+
+            Text::with_alignment(&textbuffer,oled.bounding_box().center(), text_style,Alignment::Center).draw(&mut oled).unwrap();
+            oled.flush().await.unwrap();
+            info!("update display");
+        }
+      
+    }
+}
